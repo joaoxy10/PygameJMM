@@ -18,9 +18,11 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 
 # Carro
+# car_img = pygame.Surface((40, 20), pygame.SRCALPHA)
+# pygame.draw.polygon(car_img, RED, [(0, 0), (40, 10), (0, 20)])
 car_img = pygame.Surface((40, 20), pygame.SRCALPHA)
-pygame.draw.polygon(car_img, RED, [(0, 0), (40, 10), (0, 20)])
-
+car_img = pygame.image.load(r"carro.png")
+pista = pygame.transform.scale(car_img, (5, 5))
 # Estado do carro
 car_pos = [WIDTH // 2, HEIGHT // 2 - 150]
 car_angle = 0  # graus
