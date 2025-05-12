@@ -9,7 +9,7 @@ WIDTH, HEIGHT = 1536, 1024
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Corrida Circular")
 clock = pygame.time.Clock()
-FPS = 144
+FPS = 60
 
 # Cores
 GREEN = (0, 200, 0)
