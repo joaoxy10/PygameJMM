@@ -5,11 +5,11 @@ import math
 pygame.init()
 
 # Tela
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1536, 1024
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Corrida Circular")
 clock = pygame.time.Clock()
-FPS = 60
+FPS = 144
 
 # Cores
 GREEN = (0, 200, 0)
@@ -25,10 +25,10 @@ pygame.draw.polygon(car_img, RED, [(0, 0), (40, 10), (0, 20)])
 car_pos = [WIDTH // 2, HEIGHT // 2 - 150]
 car_angle = 0  # graus
 car_speed = 0
-acceleration = 0.2
-max_speed = 6
+acceleration = 0.4
+max_speed = 10
 friction = 0.05
-turn_speed = 3  # graus por frame
+turn_speed = 4  # graus por frame
 
 # Função para desenhar circuito oval
 def draw_track():
