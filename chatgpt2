@@ -66,6 +66,8 @@ while running:
         car_angle += turn_speed
     if keys[pygame.K_LEFT]:
         car_angle -= turn_speed
+    if keys[pygame.K_ESCAPE]:
+        running=False
 
     # Limita a velocidade
     car_speed = max(-max_speed, min(max_speed, car_speed))
