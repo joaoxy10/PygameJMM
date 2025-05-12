@@ -10,7 +10,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Corrida Circular")
 clock = pygame.time.Clock()
 FPS = 60
-
+#jnj
 # Cores
 GREEN = (0, 200, 0)
 GRAY = (100, 100, 100)
