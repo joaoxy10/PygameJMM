@@ -20,7 +20,7 @@ text2 = font2.render("recorde", True, (250, 250, 250))
 game = True
 
 # ----- Inicia assets
-image = pygame.image.load(r'C:\Users\joaox\Downloads\referencia\referencia\assets\img\logo-madfox.png').convert()
+image = pygame.image.load(r'p.png').convert()
 
 # ===== Loop principal =====
 while game:
