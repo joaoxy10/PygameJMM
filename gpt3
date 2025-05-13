@@ -1,0 +1,142 @@
+import pygame
+import math
+import sys
+
+pygame.init()
+
+# Tela
+WIDTH, HEIGHT = 1536, 1024
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Insper Racers")
+clock = pygame.time.Clock()
+FPS = 60
+
+# Cores
+WHITE = (255, 255, 255)
+
+# Fonte
+fonte_pixel = pygame.font.Font("PressStart2P-Regular.ttf", 20)
+
+# Imagens
+pista_img = pygame.image.load("Pista2.png").convert()
+pista_img = pygame.transform.scale(pista_img, (WIDTH, HEIGHT))
+
+inicio_img = pygame.image.load("inicio.png").convert()
+inicio_img = pygame.transform.scale(inicio_img, (WIDTH, HEIGHT))
+
+car_img = pygame.image.load("carro.png").convert_alpha()
+car_img = pygame.transform.scale(car_img, (60, 30))
+
+car_img2 = pygame.image.load("carro2.png").convert_alpha()
+car_img2 = pygame.transform.scale(car_img2, (78, 39))
+
+# Carros como dicionários
+carro1 = {
+    "img": car_img,
+    "pos": [WIDTH // 2, HEIGHT // 2 - 150],
+    "angle": 0,
+    "speed": 0,
+    "accel": 0.4,
+    "max_speed": 4.5,
+    "friction": 0.05,
+    "turn_speed": 2
+}
+
+carro2 = {
+    "img": car_img2,
+    "pos": [WIDTH // 2, HEIGHT // 2 - 100],
+    "angle": 0,
+    "speed": 0,
+    "accel": 0.4,
+    "max_speed": 4.5,
+    "friction": 0.05,
+    "turn_speed": 2
+}
+
+# Estados do jogo
+TELA_INICIAL = 0
+TELA_JOGO = 1
+estado = TELA_INICIAL
+
+# Cronômetro
+tempo_inicial = 0
+cronometro_ativo = False
+tempo_pausado_total = 0
+
+def desenhar_tela_inicial():
+    screen.blit(inicio_img, (0, 0))
+
+def draw_track():
+    screen.blit(pista_img, (0, 0))
+
+def blit_rotate_center(surf, image, pos, angle):
+    rotated_image = pygame.transform.rotate(image, -angle)
+    new_rect = rotated_image.get_rect(center=image.get_rect(topleft=pos).center)
+    surf.blit(rotated_image, new_rect.topleft)
+
+def aplicar_movimento(teclas, frente, tras, esquerda, direita, car):
+    if teclas[frente]:
+        car["speed"] += car["accel"]
+    if teclas[tras]:
+        car["speed"] -= car["accel"]
+    if teclas[direita]:
+        car["angle"] += car["turn_speed"]
+    if teclas[esquerda]:
+        car["angle"] -= car["turn_speed"]
+    
+    car["speed"] = max(-car["max_speed"], min(car["max_speed"], car["speed"]))
+    
+    # Atrito
+    if abs(car["speed"]) < car["friction"]:
+        car["speed"] = 0
+    else:
+        car["speed"] -= math.copysign(car["friction"], car["speed"])
+
+    # Movimento
+    radians = math.radians(car["angle"])
+    car["pos"][0] += math.cos(radians) * car["speed"]
+    car["pos"][1] += math.sin(radians) * car["speed"]
+
+# Loop principal
+running = True
+while running:
+    clock.tick(FPS)
+    screen.fill(WHITE)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+            running = False
+        elif event.type == pygame.KEYDOWN and estado == TELA_INICIAL and event.key == pygame.K_RETURN:
+            estado = TELA_JOGO
+            tempo_inicial = pygame.time.get_ticks()
+            cronometro_ativo = True
+
+    if estado == TELA_INICIAL:
+        desenhar_tela_inicial()
+
+    elif estado == TELA_JOGO:
+        draw_track()
+
+        keys = pygame.key.get_pressed()
+        aplicar_movimento(keys, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, carro1)
+        aplicar_movimento(keys, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, carro2)
+
+        blit_rotate_center(screen, carro1["img"], carro1["pos"], carro1["angle"])
+        blit_rotate_center(screen, carro2["img"], carro2["pos"], carro2["angle"])
+
+        # Cronômetro
+        tempo_atual = pygame.time.get_ticks() if cronometro_ativo else tempo_inicial
+        tempo_decorrido_ms = tempo_atual - tempo_inicial - tempo_pausado_total
+
+        minutos = tempo_decorrido_ms // 60000
+        segundos = (tempo_decorrido_ms % 60000) // 1000
+        milesimos = tempo_decorrido_ms % 1000
+        tempo_formatado = f"{minutos:02}:{segundos:02}.{milesimos:03}"
+
+        texto = fonte_pixel.render(tempo_formatado, True, WHITE)
+        texto_rect = texto.get_rect(center=(WIDTH // 2, 100))
+        screen.blit(texto, texto_rect)
+
+    pygame.display.flip()
+
+pygame.quit()
