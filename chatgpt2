@@ -1,5 +1,6 @@
 import pygame
 import math
+import sys
 
 # Inicialização
 pygame.init()
@@ -16,6 +17,10 @@ GREEN = (0, 200, 0)
 GRAY = (100, 100, 100)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
+YELLOW = (100,76,13)
+
+# Fonte pixelada (você precisa ter esse arquivo .ttf na mesma pasta)
+fonte_pixel = pygame.font.Font("PressStart2P-Regular.ttf", 20)  # Ajuste o tamanho conforme a resolução
 
 # Carro
 # car_img = pygame.Surface((40, 20), pygame.SRCALPHA)
@@ -47,9 +52,21 @@ max_speed2 = 4.5
 friction2 = 0.05
 turn_speed2 = 2  # graus por frame
 
+# Estados do jogo
+TELA_INICIAL = 0
+TELA_JOGO = 1
+estado = TELA_INICIAL
+
+# Tela inicial
+def desenhar_tela_inicial():
+    inicio = pygame.image.load(r'inicio.png').convert()
+    inicio = pygame.transform.scale(inicio, (WIDTH, HEIGHT))
+    screen.fill((0, 0, 0))  # Preenche com a cor branca
+    screen.blit(inicio, (0, 0))
+
 # Função para desenhar circuito oval
 def draw_track():
-    image = pygame.image.load(r'Pista.png').convert()
+    image = pygame.image.load(r'Pista2.png').convert()
     image = pygame.transform.scale(image, (WIDTH, HEIGHT))
     screen.fill((0, 0, 0))  # Preenche com a cor branca
     screen.blit(image, (10, 10))
@@ -60,6 +77,16 @@ def blit_rotate_center(surf, image, pos, angle):
     rotated_image = pygame.transform.rotate(image, -angle)
     new_rect = rotated_image.get_rect(center=image.get_rect(topleft=pos).center)
     surf.blit(rotated_image, new_rect.topleft)
+
+
+# Relógio
+clock = pygame.time.Clock()
+
+# Controle de tempo
+tempo_inicial = 0
+cronometro_ativo = False
+tempo_pausado_total = 0
+tempo_pausa_comeco = 0
 
 # Loop principal
 running = True
@@ -72,126 +99,162 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # Entradas
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]:
-        car_speed += acceleration
-    if keys[pygame.K_s]:
-        car_speed -= acceleration
-    if keys[pygame.K_d]:
-        car_angle += turn_speed
-    if keys[pygame.K_a]:
-        car_angle -= turn_speed
-    if keys[pygame.K_ESCAPE]:
-        running=False
+        elif event.type == pygame.KEYDOWN:
+            if estado == TELA_INICIAL and event.key == pygame.K_RETURN:
+                estado = TELA_JOGO
+                tempo_inicial = pygame.time.get_ticks()
+                cronometro_ativo = True
+            elif event.key == pygame.K_ESCAPE:
+                running = False
 
-    #Jogador 2
-    if keys[pygame.K_UP]:
-        car_speed2 += acceleration
-    if keys[pygame.K_DOWN]:
-        car_speed2 -= acceleration
-    if keys[pygame.K_RIGHT]:
-        car_angle2 += turn_speed
-    if keys[pygame.K_LEFT]:
-        car_angle2 -= turn_speed
-    if keys[pygame.K_ESCAPE]:
-        running=False
+        # Desenhar conforme o estado
+    if estado == TELA_INICIAL:
+        desenhar_tela_inicial()
+    elif estado == TELA_JOGO:
+        draw_track()
+    
+        # Entradas
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
+            car_speed += acceleration
+        if keys[pygame.K_s]:
+            car_speed -= acceleration
+        if keys[pygame.K_d]:
+            car_angle += turn_speed
+        if keys[pygame.K_a]:
+            car_angle -= turn_speed
+        if keys[pygame.K_ESCAPE]:
+            running=False
 
-    # Limita a velocidade
-    car_speed = max(-max_speed, min(max_speed, car_speed))
-    car_speed2 = max(-max_speed2, min(max_speed2, car_speed2))
-
-    # Aplica atrito
-    if car_speed > 0:
-        car_speed -= friction
-        if car_speed < 0:
-            car_speed = 0
-    elif car_speed < 0:
-        car_speed += friction
-        if car_speed > 0:
-            car_speed = 0
-
-    # Aplica atrito
-    if car_speed2 > 0:
-        car_speed2 -= friction
-        if car_speed2 < 0:
-            car_speed2 = 0
-    elif car_speed2 < 0:
-        car_speed2 += friction
-        if car_speed2 > 0:
-            car_speed2 = 0
-
-    # Atualiza posição
-    radians = math.radians(car_angle)
-    car_pos[0] += math.cos(radians) * car_speed
-    car_pos[1] += math.sin(radians) * car_speed
-    # Atualiza posição
-    radians = math.radians(car_angle2)
-    car_pos2[0] += math.cos(radians) * car_speed2
-    car_pos2[1] += math.sin(radians) * car_speed2
-
-    # Entradas
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]:
-        car_speed += acceleration
-    if keys[pygame.K_s]:
-        car_speed -= acceleration
-    if keys[pygame.K_d]:
-        car_angle += turn_speed
-    if keys[pygame.K_a]:
-        car_angle -= turn_speed
-    if keys[pygame.K_ESCAPE]:
-        running=False
         #Jogador 2
-    if keys[pygame.K_UP]:
-        car_speed2 += acceleration
-    if keys[pygame.K_DOWN]:
-        car_speed2 -= acceleration
-    if keys[pygame.K_RIGHT]:
-        car_angle2 += turn_speed
-    if keys[pygame.K_LEFT]:
-        car_angle2 -= turn_speed
-    if keys[pygame.K_ESCAPE]:
-        running=False
+        if keys[pygame.K_UP]:
+            car_speed2 += acceleration
+        if keys[pygame.K_DOWN]:
+            car_speed2 -= acceleration
+        if keys[pygame.K_RIGHT]:
+            car_angle2 += turn_speed
+        if keys[pygame.K_LEFT]:
+            car_angle2 -= turn_speed
+        if keys[pygame.K_ESCAPE]:
+            running=False
 
-    # Limita a velocidade
-    car_speed = max(-max_speed, min(max_speed, car_speed))
-    car_speed2 = max(-max_speed2, min(max_speed2, car_speed2))
+        # Limita a velocidade
+        car_speed = max(-max_speed, min(max_speed, car_speed))
+        car_speed2 = max(-max_speed2, min(max_speed2, car_speed2))
 
-    # Aplica atrito
-    if car_speed > 0:
-        car_speed -= friction
-        if car_speed < 0:
-            car_speed = 0
-    elif car_speed < 0:
-        car_speed += friction
+        # Aplica atrito
         if car_speed > 0:
-            car_speed = 0
+            car_speed -= friction
+            if car_speed < 0:
+                car_speed = 0
+        elif car_speed < 0:
+            car_speed += friction
+            if car_speed > 0:
+                car_speed = 0
 
-    # Aplica atrito
-    if car_speed2 > 0:
-        car_speed2 -= friction
-        if car_speed2 < 0:
-            car_speed2 = 0
-    elif car_speed2 < 0:
-        car_speed2 += friction
+        # Aplica atrito
         if car_speed2 > 0:
-            car_speed2 = 0
+            car_speed2 -= friction
+            if car_speed2 < 0:
+                car_speed2 = 0
+        elif car_speed2 < 0:
+            car_speed2 += friction
+            if car_speed2 > 0:
+                car_speed2 = 0
 
-    # Atualiza posição
-    radians = math.radians(car_angle)
-    car_pos[0] += math.cos(radians) * car_speed
-    car_pos[1] += math.sin(radians) * car_speed
-    # Atualiza posição
-    radians = math.radians(car_angle2)
-    car_pos2[0] += math.cos(radians) * car_speed2
-    car_pos2[1] += math.sin(radians) * car_speed2
+        # Atualiza posição
+        radians = math.radians(car_angle)
+        car_pos[0] += math.cos(radians) * car_speed
+        car_pos[1] += math.sin(radians) * car_speed
+        # Atualiza posição
+        radians = math.radians(car_angle2)
+        car_pos2[0] += math.cos(radians) * car_speed2
+        car_pos2[1] += math.sin(radians) * car_speed2
 
-    # Desenho da pista e do carro
-    draw_track()
-    blit_rotate_center(screen, car_img, car_pos, car_angle)
-    blit_rotate_center(screen, car_img2, car_pos2, car_angle2)
+        # Entradas
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
+            car_speed += acceleration
+        if keys[pygame.K_s]:
+            car_speed -= acceleration
+        if keys[pygame.K_d]:
+            car_angle += turn_speed
+        if keys[pygame.K_a]:
+            car_angle -= turn_speed
+        if keys[pygame.K_ESCAPE]:
+            running=False
+            #Jogador 2
+        if keys[pygame.K_UP]:
+            car_speed2 += acceleration
+        if keys[pygame.K_DOWN]:
+            car_speed2 -= acceleration
+        if keys[pygame.K_RIGHT]:
+            car_angle2 += turn_speed
+        if keys[pygame.K_LEFT]:
+            car_angle2 -= turn_speed
+        if keys[pygame.K_ESCAPE]:
+            running=False
+
+        # Limita a velocidade
+        car_speed = max(-max_speed, min(max_speed, car_speed))
+        car_speed2 = max(-max_speed2, min(max_speed2, car_speed2))
+
+        # Aplica atrito
+        if car_speed > 0:
+            car_speed -= friction
+            if car_speed < 0:
+                car_speed = 0
+        elif car_speed < 0:
+            car_speed += friction
+            if car_speed > 0:
+                car_speed = 0
+
+        # Aplica atrito
+        if car_speed2 > 0:
+            car_speed2 -= friction
+            if car_speed2 < 0:
+                car_speed2 = 0
+        elif car_speed2 < 0:
+            car_speed2 += friction
+            if car_speed2 > 0:
+                car_speed2 = 0
+
+        # Atualiza posição
+        radians = math.radians(car_angle)
+        car_pos[0] += math.cos(radians) * car_speed
+        car_pos[1] += math.sin(radians) * car_speed
+        # Atualiza posição
+        radians = math.radians(car_angle2)
+        car_pos2[0] += math.cos(radians) * car_speed2
+        car_pos2[1] += math.sin(radians) * car_speed2
+
+        # Desenho da pista e do carro
+        draw_track()
+        blit_rotate_center(screen, car_img, car_pos, car_angle)
+        blit_rotate_center(screen, car_img2, car_pos2, car_angle2)
+
+                # Cronômetro
+        if cronometro_ativo:
+            tempo_atual = pygame.time.get_ticks()
+        else:
+            tempo_atual = tempo_pausa_comeco
+
+        tempo_decorrido_ms = tempo_atual - tempo_inicial - tempo_pausado_total
+
+        # Cálculo de tempo
+        minutos = tempo_decorrido_ms // 60000
+        segundos = (tempo_decorrido_ms % 60000) // 1000
+        milésimos = tempo_decorrido_ms % 1000
+
+        # Texto do tempo formatado
+        tempo_formatado = f"{minutos:02}:{segundos:02}.{milésimos:03}"
+
+        # Renderizar e desenhar o cronômetro
+        texto = fonte_pixel.render(tempo_formatado, True, WHITE)
+        texto_rect = texto.get_rect(center=(WIDTH // 2, 100))  # centralizado no topo
+        screen.blit(texto, texto_rect)
 
     pygame.display.flip()
 
 pygame.quit()
+
