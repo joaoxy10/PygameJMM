@@ -7,7 +7,7 @@ pygame.init()
 # Tela
 WIDTH, HEIGHT = 1536, 1024
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Corrida Circular")
+pygame.display.set_caption("Insper Racers")
 clock = pygame.time.Clock()
 FPS = 60
 #jnj
@@ -22,19 +22,20 @@ RED = (255, 0, 0)
 # pygame.draw.polygon(car_img, RED, [(0, 0), (40, 10), (0, 20)])
 car_img = pygame.Surface((40, 20), pygame.SRCALPHA)
 car_img = pygame.image.load(r"carro.png")
-pista = pygame.transform.scale(car_img, (5, 2))
+car_img = pygame.transform.scale(car_img, (60, 30))
 # Estado do carro
 car_pos = [WIDTH // 2, HEIGHT // 2 - 150]
 car_angle = 0  # graus
 car_speed = 0
 acceleration = 0.4
-max_speed = 10
+max_speed = 6
 friction = 0.05
-turn_speed = 4  # graus por frame
+turn_speed = 2  # graus por frame
 
 # Função para desenhar circuito oval
 def draw_track():
-    image = pygame.image.load(r'p.png').convert()
+    image = pygame.image.load(r'Pista.png').convert()
+    image = pygame.transform.scale(image, (WIDTH, HEIGHT))
     screen.fill((0, 0, 0))  # Preenche com a cor branca
     screen.blit(image, (10, 10))
     
