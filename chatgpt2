@@ -28,7 +28,7 @@ car_pos = [WIDTH // 2, HEIGHT // 2 - 150]
 car_angle = 0  # graus
 car_speed = 0
 acceleration = 0.4
-max_speed = 6
+max_speed = 4.5
 friction = 0.05
 turn_speed = 2  # graus por frame
 
@@ -36,14 +36,14 @@ turn_speed = 2  # graus por frame
 # car_img = pygame.Surface((40, 20), pygame.SRCALPHA)
 # pygame.draw.polygon(car_img, RED, [(0, 0), (40, 10), (0, 20)])
 car_img2 = pygame.Surface((40, 20), pygame.SRCALPHA)
-car_img2 = pygame.image.load(r"carro.png")
-car_img2 = pygame.transform.scale(car_img2, (60, 30))
+car_img2 = pygame.image.load(r"carro2.png")
+car_img2 = pygame.transform.scale(car_img2, (78, 39))
 # Estado do carro
 car_pos2 = [WIDTH // 2, HEIGHT // 2 - 150]
 car_angle2 = 0  # graus
 car_speed2 = 0
 acceleration2 = 0.4
-max_speed2 = 6
+max_speed2 = 4.5
 friction2 = 0.05
 turn_speed2 = 2  # graus por frame
 
