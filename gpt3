@@ -19,10 +19,10 @@ fonte_pixel = pygame.font.Font("PressStart2P-Regular.ttf", 20)
 
 # Imagens
 pista_img = pygame.image.load("Pista2.png").convert()
-pista_img = pygame.transform.scale(pista_img, (WIDTH, HEIGHT))
+pista_img = pygame.transform.scale(pista_img, (WIDTH, HEIGHT-30))
 
 inicio_img = pygame.image.load("inicio.png").convert()
-inicio_img = pygame.transform.scale(inicio_img, (WIDTH, HEIGHT))
+inicio_img = pygame.transform.scale(inicio_img, (WIDTH, HEIGHT-50))
 
 car_img = pygame.image.load("carro.png").convert_alpha()
 car_img = pygame.transform.scale(car_img, (60, 30))
@@ -33,7 +33,7 @@ car_img2 = pygame.transform.scale(car_img2, (78, 39))
 # Carros como dicionários
 carro1 = {
     "img": car_img,
-    "pos": [WIDTH // 2, HEIGHT // 2 - 150],
+    "pos": [550, 890],
     "angle": 0,
     "speed": 0,
     "accel": 0.4,
@@ -44,7 +44,7 @@ carro1 = {
 
 carro2 = {
     "img": car_img2,
-    "pos": [WIDTH // 2, HEIGHT // 2 - 100],
+    "pos": [550, 860],
     "angle": 0,
     "speed": 0,
     "accel": 0.4,
@@ -64,10 +64,10 @@ cronometro_ativo = False
 tempo_pausado_total = 0
 
 def desenhar_tela_inicial():
-    screen.blit(inicio_img, (0, 0))
+    screen.blit(inicio_img, (0, 60))
 
 def draw_track():
-    screen.blit(pista_img, (0, 0))
+    screen.blit(pista_img, (0, 45))
 
 def blit_rotate_center(surf, image, pos, angle):
     rotated_image = pygame.transform.rotate(image, -angle)
@@ -134,7 +134,7 @@ while running:
         tempo_formatado = f"{minutos:02}:{segundos:02}.{milesimos:03}"
 
         texto = fonte_pixel.render(tempo_formatado, True, WHITE)
-        texto_rect = texto.get_rect(center=(WIDTH // 2, 100))
+        texto_rect = texto.get_rect(center=(WIDTH // 2+500, 100))
         screen.blit(texto, texto_rect)
 
     pygame.display.flip()

@@ -41,7 +41,7 @@ turn_speed = 2  # graus por frame
 # car_img = pygame.Surface((40, 20), pygame.SRCALPHA)
 # pygame.draw.polygon(car_img, RED, [(0, 0), (40, 10), (0, 20)])
 car_img2 = pygame.Surface((40, 20), pygame.SRCALPHA)
-car_img2 = pygame.image.load(r"carro2.png")
+car_img2 = pygame.image.load(r"carro3.png")
 car_img2 = pygame.transform.scale(car_img2, (78, 39))
 # Estado do carro
 car_pos2 = [WIDTH // 2, HEIGHT // 2 - 150]
@@ -60,9 +60,9 @@ estado = TELA_INICIAL
 # Tela inicial
 def desenhar_tela_inicial():
     inicio = pygame.image.load(r'inicio.png').convert()
-    inicio = pygame.transform.scale(inicio, (WIDTH, HEIGHT))
+    inicio = pygame.transform.scale(inicio, (WIDTH, HEIGHT-60))
     screen.fill((0, 0, 0))  # Preenche com a cor branca
-    screen.blit(inicio, (0, 0))
+    screen.blit(inicio, (10, 50))
 
 # Função para desenhar circuito oval
 def draw_track():
