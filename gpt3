@@ -19,7 +19,10 @@ fonte_pixel = pygame.font.Font("PressStart2P-Regular.ttf", 20)
 
 # Imagens
 pista_img = pygame.image.load("Pista2.png").convert()
-pista_img = pygame.transform.scale(pista_img, (WIDTH, HEIGHT-30))
+pista_img = pygame.transform.scale(pista_img, (WIDTH, HEIGHT-60))
+
+col_map = pygame.image.load('pista_colisao.png').convert()
+col_map = pygame.transform.scale(col_map, (WIDTH, HEIGHT - 60))
 
 inicio_img = pygame.image.load("inicio.png").convert()
 inicio_img = pygame.transform.scale(inicio_img, (WIDTH, HEIGHT-60))
@@ -29,11 +32,12 @@ car_img = pygame.transform.scale(car_img, (47, 43))
 
 car_img2 = pygame.image.load("carro5 .png").convert_alpha()
 car_img2 = pygame.transform.scale(car_img2, (47, 43))
+car_width, car_height = 47, 43
 
 # Carros como dicionários
 carro1 = {
     "img": car_img,
-    "pos": [550, 890],
+    "pos": [550, 830], 
     "angle": 0,
     "speed": 0,
     "accel": 0.4,
@@ -44,7 +48,7 @@ carro1 = {
 
 carro2 = {
     "img": car_img2,
-    "pos": [550, 860],
+    "pos": [550, 800],
     "angle": 0,
     "speed": 0,
     "accel": 0.4,
@@ -58,20 +62,34 @@ TELA_INICIAL = 0
 TELA_JOGO = 1
 estado = TELA_INICIAL
 
+
 # Cronômetro
 tempo_inicial = 0
 cronometro_ativo = False
 tempo_pausado_total = 0
 
+lap_times = []
+lap_started = False
+last_cross_time = 0
+lap_start_time = 0
+
+def draw_rotated_rect(pos, image, angle):
+    rotated_image = pygame.transform.rotate(image, -angle)
+    rect = rotated_image.get_rect(center=pos)
+    debug_surf = pygame.Surface(rotated_image.get_size(), pygame.SRCALPHA)
+    pygame.draw.rect(debug_surf, (255, 0, 0, 100), debug_surf.get_rect(), 2)  # Red outline
+    screen.blit(debug_surf, rect.topleft)
+
 def desenhar_tela_inicial():
-    screen.blit(inicio_img, (0, 60))
+    screen.blit(inicio_img, (0, 0))
 
 def draw_track():
-    screen.blit(pista_img, (0, 45))
+    screen.blit(pista_img, (0, 0))
+    pygame.draw.rect(screen, (0, 255, 0), largada_rect, 2) 
 
 def blit_rotate_center(surf, image, pos, angle):
     rotated_image = pygame.transform.rotate(image, -angle)
-    new_rect = rotated_image.get_rect(center=image.get_rect(topleft=pos).center)
+    new_rect = rotated_image.get_rect(center=image.get_rect(center=pos).center)
     surf.blit(rotated_image, new_rect.topleft)
 
 def aplicar_movimento(teclas, frente, tras, esquerda, direita, car):
@@ -96,6 +114,37 @@ def aplicar_movimento(teclas, frente, tras, esquerda, direita, car):
     radians = math.radians(car["angle"])
     car["pos"][0] += math.cos(radians) * car["speed"]
     car["pos"][1] += math.sin(radians) * car["speed"]
+
+def na_pista(pos, mapa_col, angle):
+    x, y = pos
+    radians = math.radians(angle)
+    
+    # pegar 5 pontos em volta do carrinho   + logica pra usar o angulo do carrinho
+    offsets = [
+        (0, 0),  # centro
+        (math.cos(radians) * 20, math.sin(radians) * 20),  # frente
+        (math.cos(radians) * -20, math.sin(radians) * -20),  # tras
+        (math.cos(radians + math.pi/2) * 15, math.sin(radians + math.pi/2) * 15),  # esquerda
+        (math.cos(radians - math.pi/2) * 15, math.sin(radians - math.pi/2) * 15),  # direita
+    ]
+
+    for dx, dy in offsets:
+        cx, cy = int(x + dx), int(y + dy)
+        if not (0 <= cx < mapa_col.get_width() and 0 <= cy < mapa_col.get_height()):
+            return False
+        cor = mapa_col.get_at((cx, cy))[:3]
+        if any(c < 250 for c in cor):  #se nao for proximo de branco eh fora da pista
+            return False
+    return True
+
+
+
+
+
+
+#linha de largada/chegada  
+largada_rect = pygame.Rect(580, 770, 5, 110)  
+
 
 # Loop principal
 running = True
@@ -123,6 +172,29 @@ while running:
 
         blit_rotate_center(screen, carro1["img"], carro1["pos"], carro1["angle"])
         blit_rotate_center(screen, carro2["img"], carro2["pos"], carro2["angle"])
+        
+        draw_rotated_rect(carro1["pos"], carro1["img"], carro1["angle"])
+        draw_rotated_rect(carro2["pos"], carro2["img"], carro2["angle"])
+
+
+        pygame.draw.circle(screen, (255, 0, 0), (int(carro1["pos"][0]), int(carro1["pos"][1])), 3)
+        
+        now = pygame.time.get_ticks()
+
+        if largada_rect.collidepoint(carro1["pos"]):
+            if now - last_cross_time > 2000:  # debounce: only once every 2 seconds
+                last_cross_time = now
+
+                if lap_started:
+                    lap_time = now - lap_start_time
+                    lap_times.append(lap_time)
+                    print(f"🏁 Lap completed! Time: {lap_time / 1000:.2f} seconds")
+                else:
+                    lap_started = True  # first time crossing
+
+                lap_start_time = now
+
+
 
         # Cronômetro
         tempo_atual = pygame.time.get_ticks() if cronometro_ativo else tempo_inicial
@@ -136,6 +208,9 @@ while running:
         texto = fonte_pixel.render(tempo_formatado, True, WHITE)
         texto_rect = texto.get_rect(center=(WIDTH // 2+500, 100))
         screen.blit(texto, texto_rect)
+
+        if not na_pista(carro1['pos'], col_map, carro1['angle']):
+            carro1['speed'] = -carro1['speed'] * 0.7
 
     pygame.display.flip()
 
