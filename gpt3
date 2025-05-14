@@ -22,7 +22,7 @@ pista_img = pygame.image.load("Pista2.png").convert()
 pista_img = pygame.transform.scale(pista_img, (WIDTH, HEIGHT-30))
 
 inicio_img = pygame.image.load("inicio.png").convert()
-inicio_img = pygame.transform.scale(inicio_img, (WIDTH, HEIGHT-50))
+inicio_img = pygame.transform.scale(inicio_img, (WIDTH, HEIGHT-60))
 
 car_img = pygame.image.load("carro.png").convert_alpha()
 car_img = pygame.transform.scale(car_img, (60, 30))
