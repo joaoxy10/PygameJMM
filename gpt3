@@ -81,10 +81,11 @@ def draw_rotated_rect(pos, image, angle):
     screen.blit(debug_surf, rect.topleft)
 
 def desenhar_tela_inicial():
-    screen.blit(inicio_img, (0, 0))
+    screen.blit(inicio_img, (0, 45))
 
 def draw_track():
     screen.blit(pista_img, (0, 0))
+    
     pygame.draw.rect(screen, (0, 255, 0), largada_rect, 2) 
 
 def blit_rotate_center(surf, image, pos, angle):
