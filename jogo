@@ -35,12 +35,18 @@ car_img2 = pygame.transform.scale(car_img2, (47, 43))
 car_width, car_height = 47, 43
 #sons
 acelera=pygame.mixer.Sound('acelera.ogg')
+freia=pygame.mixer.Sound('freio.ogg')
 
-def audio(teclas, frente):
+def audio(teclas, frente, tras):
     if teclas[frente]:
         acelera.play()
+        freia.stop()
+    elif teclas[tras]:
+        acelera.stop()
+        freia.play()
     else:
         acelera.stop()
+        freia.stop()
     
 # Carros como dicionários
 carro1 = {
@@ -185,7 +191,7 @@ while running:
         keys = pygame.key.get_pressed()
         aplicar_movimento(keys, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, carro1)
         aplicar_movimento(keys, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, carro2)
-        audio(keys, pygame.K_UP)
+        audio(keys, pygame.K_UP,pygame.K_DOWN)
 
         blit_rotate_center(screen, carro1["img"], carro1["pos"], carro1["angle"])
         blit_rotate_center(screen, carro2["img"], carro2["pos"], carro2["angle"])
