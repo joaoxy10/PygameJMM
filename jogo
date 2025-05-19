@@ -3,7 +3,7 @@ import math
 import sys
 
 pygame.init()
-
+pygame.mixer.init()
 # Tela
 WIDTH, HEIGHT = 1536, 1024
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -33,7 +33,15 @@ car_img = pygame.transform.scale(car_img, (47, 43))
 car_img2 = pygame.image.load("carro5 .png").convert_alpha()
 car_img2 = pygame.transform.scale(car_img2, (47, 43))
 car_width, car_height = 47, 43
+#sons
+acelera=pygame.mixer.Sound('acelera.ogg')
 
+def audio(teclas, frente):
+    if teclas[frente]:
+        acelera.play()
+    else:
+        acelera.stop()
+    
 # Carros como dicionários
 carro1 = {
     "img": car_img,
@@ -177,6 +185,7 @@ while running:
         keys = pygame.key.get_pressed()
         aplicar_movimento(keys, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, carro1)
         aplicar_movimento(keys, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, carro2)
+        audio(keys, pygame.K_UP)
 
         blit_rotate_center(screen, carro1["img"], carro1["pos"], carro1["angle"])
         blit_rotate_center(screen, carro2["img"], carro2["pos"], carro2["angle"])
