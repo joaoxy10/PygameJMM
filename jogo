@@ -26,7 +26,7 @@ pista_img = pygame.transform.scale(pista_img, (WIDTH, HEIGHT-60))
 col_map = pygame.image.load('pista_colisao.png').convert()
 col_map = pygame.transform.scale(col_map, (WIDTH, HEIGHT - 60))
 
-inicio_img = pygame.image.load("inicio.png").convert()
+inicio_img = pygame.image.load("telainicial.png").convert()
 inicio_img = pygame.transform.scale(inicio_img, (WIDTH, HEIGHT-60))
 
 car_img = pygame.image.load("carro4.png").convert_alpha()
@@ -36,14 +36,17 @@ car_img2 = pygame.image.load("carro5 .png").convert_alpha()
 car_img2 = pygame.transform.scale(car_img2, (47, 43))
 car_width, car_height = 47, 43
 
-volta_invalida_img = pygame.image.load("volta_invalida.png").convert_alpha()
-volta_invalida_img = pygame.transform.scale(volta_invalida_img, (400, 100))  # ajustar tamanho
+#volta_invalida_img = pygame.image.load("volta_invalida.png").convert_alpha()
+#volta_invalida_img = pygame.transform.scale(volta_invalida_img, (400, 100))  # ajustar tamanho
 
 
 #sons
 acelera=pygame.mixer.Sound('acelera.ogg')
 freia=pygame.mixer.Sound('freio.ogg')
-som_volta_invalida = pygame.mixer.Sound('volta_invalida.ogg')
+#som_volta_invalida = pygame.mixer.Sound('volta_invalida.ogg')
+pygame.mixer.music.load('musicaBIT.ogg')
+pygame.mixer.music.set_volume(0.5)
+pygame.mixer.music.play()
 
 
 def audio(teclas, frente, tras):
@@ -203,6 +206,7 @@ while running:
         desenhar_tela_inicial()
 
     elif estado == TELA_JOGO:
+        pygame.mixer.music.set_volume(0.3)
         draw_track()
 
         keys = pygame.key.get_pressed()
