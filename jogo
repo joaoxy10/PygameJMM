@@ -20,10 +20,10 @@ RED = (255, 0, 0)
 fonte_pixel = pygame.font.Font("PressStart2P-Regular.ttf", 20)
 
 #imagens
-pista_img = pygame.image.load("Pista2.png").convert()
+pista_img = pygame.image.load("pista4.0.png").convert()
 pista_img = pygame.transform.scale(pista_img, (WIDTH, HEIGHT-60))
 
-col_map = pygame.image.load('pista_colisao.png').convert()
+col_map = pygame.image.load('pista4 colisao.png').convert()
 col_map = pygame.transform.scale(col_map, (WIDTH, HEIGHT - 60))
 
 inicio_img = pygame.image.load("telainicial.png").convert()
@@ -185,7 +185,7 @@ def penalty(pos, mapa_col, angle):
 
 
 #linha de largada/chegada  
-largada_rect = pygame.Rect(580, 770, 12, 110)  
+largada_rect = pygame.Rect(580, 740, 12, 110)  
 
 
 # Loop principal
@@ -233,7 +233,8 @@ while running:
                 if lap_started == True:  #tudo sobre a contagem de voltas
                     lap_time = now - lap_start_time
                     lap_times.append(lap_time)
-
+                    if lap_time < 7000:
+                        print('bruh')
                     #formatar twmpo da ultima volta
                     minuto = lap_time // 60000
                     seg = (lap_time % 60000) // 1000
@@ -313,8 +314,7 @@ while running:
             carro1['angle'] = 0
 
 
-        if lap_time < 7000:
-            print('bruh')
+        
 
 
 
