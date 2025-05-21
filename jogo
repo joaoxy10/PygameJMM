@@ -4,20 +4,22 @@ import sys
 
 pygame.init()
 pygame.mixer.init()
-# Tela
+#tela
 WIDTH, HEIGHT = 1536, 1024
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Insper Racers")
 clock = pygame.time.Clock()
 FPS = 60
 
-# Cores
+#cores
 WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
 
-# Fonte
+#fonte
 fonte_pixel = pygame.font.Font("PressStart2P-Regular.ttf", 20)
 
-# Imagens
+#imagens
 pista_img = pygame.image.load("Pista2.png").convert()
 pista_img = pygame.transform.scale(pista_img, (WIDTH, HEIGHT-60))
 
@@ -33,9 +35,16 @@ car_img = pygame.transform.scale(car_img, (47, 43))
 car_img2 = pygame.image.load("carro5 .png").convert_alpha()
 car_img2 = pygame.transform.scale(car_img2, (47, 43))
 car_width, car_height = 47, 43
+
+volta_invalida_img = pygame.image.load("volta_invalida.png").convert_alpha()
+volta_invalida_img = pygame.transform.scale(volta_invalida_img, (400, 100))  # ajustar tamanho
+
+
 #sons
 acelera=pygame.mixer.Sound('acelera.ogg')
 freia=pygame.mixer.Sound('freio.ogg')
+som_volta_invalida = pygame.mixer.Sound('volta_invalida.ogg')
+
 
 def audio(teclas, frente, tras):
     if teclas[frente]:
@@ -48,7 +57,7 @@ def audio(teclas, frente, tras):
         acelera.stop()
         freia.stop()
     
-# Carros como dicionários
+#carros como dicionarios
 carro1 = {
     "img": car_img,
     "pos": [550, 830], 
@@ -57,7 +66,8 @@ carro1 = {
     "accel": 0.5,
     "max_speed": 7,
     "friction": 0.05,
-    "turn_speed": 2.5
+    "turn_speed": 2.5,
+    "last_pos1": [550, 830]
 }
 
 carro2 = {
@@ -68,16 +78,17 @@ carro2 = {
     "accel": 0.4,
     "max_speed": 4.5,
     "friction": 0.05,
-    "turn_speed": 2
+    "turn_speed": 2,
+    "last_pos2": [550, 830]
 }
 
-# Estados do jogo
+#estados do jogo
 TELA_INICIAL = 0
 TELA_JOGO = 1
 estado = TELA_INICIAL
 
 
-# Cronômetro
+# cronometro
 tempo_inicial = 0
 cronometro_ativo = False
 tempo_pausado_total = 0
@@ -86,7 +97,13 @@ lap_times = []
 lap_started = False
 last_cross_time = 0
 lap_start_time = 0
+ultimo_tempo_volta = None
+melhor_volta = None
+diferenca_voltas = None
+mostrar_volta_invalida = False
+tempo_erro_mostrado = 3000
 
+#funcoes
 def draw_rotated_rect(pos, image, angle):
     rotated_image = pygame.transform.rotate(image, -angle)
     rect = rotated_image.get_rect(center=pos)
@@ -119,14 +136,15 @@ def aplicar_movimento(teclas, frente, tras, esquerda, direita, car):
     
     car["speed"] = max(-car["max_speed"], min(car["max_speed"], car["speed"]))
     
-    # Atrito
+    #atrito
     if abs(car["speed"]) < car["friction"]:
         car["speed"] = 0
     else:
         car["speed"] -= math.copysign(car["friction"], car["speed"])
 
-    # Movimento
+    #movimento
     radians = math.radians(car["angle"])
+    car["last_pos"] = car["pos"][:]
     car["pos"][0] += math.cos(radians) * car["speed"]
     car["pos"][1] += math.sin(radians) * car["speed"]
 
@@ -134,7 +152,7 @@ def na_pista(pos, mapa_col, angle):
     x, y = pos
     radians = math.radians(angle)
     
-    # pegar 5 pontos em volta do carrinho   + logica pra usar o angulo do carrinho
+    # pegar 5 pontos em volta do carrinho  
     offsets = [
         (0, 0),  # centro
         (math.cos(radians) * 20, math.sin(radians) * 20),  # frente
@@ -163,9 +181,8 @@ def penalty(pos, mapa_col, angle):
 
 
 
-
 #linha de largada/chegada  
-largada_rect = pygame.Rect(580, 770, 5, 110)  
+largada_rect = pygame.Rect(580, 770, 12, 110)  
 
 
 # Loop principal
@@ -204,28 +221,47 @@ while running:
         
         now = pygame.time.get_ticks()
 
-        if largada_rect.collidepoint(carro1["pos"]):
+        if (largada_rect.collidepoint(carro1["pos"])):
+            
             if now - last_cross_time > 2000:  # debounce a cada 2 segundos
                 last_cross_time = now
 
-                if lap_started == True:
+                if lap_started == True:  #tudo sobre a contagem de voltas
                     lap_time = now - lap_start_time
                     lap_times.append(lap_time)
-                    print(lap_time)
-                    min = lap_time // 60000
-                    sec = (lap_time % 60000) // 1000
+
+                    #formatar twmpo da ultima volta
+                    minuto = lap_time // 60000
+                    seg = (lap_time % 60000) // 1000
                     mil = lap_time % 1000
-                    time_ready = f"{min:02}:{sec:02}.{mil:03}"
+                    ultimo_tempo_volta = f"{minuto:02}:{seg:02}.{mil:03}"
+
+                    #setar a ultima volta
+                    if melhor_volta == None or lap_time < melhor_volta:
+                        melhor_volta = lap_time
+
+                    #calcular diferenca
+                    if len(lap_times) >= 2:
+                        diferenca = lap_times[-1] - lap_times[-2]
+                        
+                        if diferenca > 0:
+                            sinal = '+'
+                            diff_cor = RED
+                        else:
+                            sinal = '-'
+                            diff_cor = GREEN
+                        
+                        diferenca = abs(diferenca)
+                        diff_min = diferenca // 60000
+                        diff_seg = (diferenca % 60000) // 1000
+                        diff_mil = diferenca % 1000
+                        diferenca_voltas = f"{sinal}{diff_seg:02}.{diff_mil:03}" #vc ganha um premio se fizer diferenca de 1 min ou mais
                     
-                    text = fonte_pixel.render(time_ready, True, WHITE)
-                    text_rect = texto.get_rect(center=(100, 100))
-                    screen.blit(text, text_rect)
                     
                 else:
-                    lap_started = True  # first time crossing
+                    lap_started = True  #first time crossing
 
                 lap_start_time = now
-
 
 
         # Cronômetro
@@ -241,6 +277,27 @@ while running:
         texto_rect = texto.get_rect(center=(WIDTH // 2+500, 100))
         screen.blit(texto, texto_rect)
         
+
+        if ultimo_tempo_volta:
+            lap_text = fonte_pixel.render(f"Última: {ultimo_tempo_volta}", True, WHITE)
+            lap_rect = lap_text.get_rect(topleft=(50, 50))
+            screen.blit(lap_text, lap_rect)
+
+        # Melhor volta
+        if melhor_volta is not None:
+            min_b = melhor_volta // 60000
+            seg_b = (melhor_volta % 60000) // 1000
+            mil_b = melhor_volta % 1000
+            melhor_formatado = f"{min_b:02}:{seg_b:02}.{mil_b:03}"
+            best_text = fonte_pixel.render(f"Melhor: {melhor_formatado}", True, WHITE)
+            best_rect = best_text.get_rect(topleft=(50, 90))
+            screen.blit(best_text, best_rect)
+
+        # Diferença de tempo
+        if diferenca_voltas:
+            diff_text = fonte_pixel.render(f"Δ: {diferenca_voltas}", True, diff_cor)
+            diff_rect = diff_text.get_rect(topleft=(50, 130))
+            screen.blit(diff_text, diff_rect)
         
             
 
@@ -251,6 +308,16 @@ while running:
             carro1['pos'] = [610, 830]
             carro1['angle'] = 0
 
+
+        if lap_time < 7000:
+            print('bruh')
+
+
+
+
+
+
     pygame.display.flip()
 
 pygame.quit()
+
