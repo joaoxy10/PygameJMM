@@ -1,0 +1,430 @@
+import pygame
+import math
+import sys
+import json
+from jij import ordena
+
+with open('ranking.json', 'r') as arquivo_json:
+    texto_ranking = arquivo_json.read()
+
+dicionario_tempos = json.load(texto_ranking)
+
+
+print(texto_ranking)
+
+pygame.init()
+pygame.mixer.init()
+#tela
+WIDTH, HEIGHT = 1536, 1024
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Insper Racers")
+clock = pygame.time.Clock()
+FPS = 60
+
+#cores
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+
+#fonte
+fonte_pixel = pygame.font.Font("PressStart2P-Regular.ttf", 20)
+
+#imagens
+pista_img = pygame.image.load("pista4.0.png").convert()
+pista_img = pygame.transform.scale(pista_img, (WIDTH, HEIGHT-60))
+
+col_map = pygame.image.load('pista4 colisao.png').convert()
+col_map = pygame.transform.scale(col_map, (WIDTH, HEIGHT - 60))
+
+inicio_img = pygame.image.load("telainicial.png").convert()
+inicio_img = pygame.transform.scale(inicio_img, (WIDTH, HEIGHT-60))
+
+ranking_img = pygame.image.load("telaranking.png").convert()
+ranking_img = pygame.transform.scale(ranking_img, (WIDTH, HEIGHT-60))
+
+nome_img = pygame.image.load("telanome.png").convert()
+nome_img_img = pygame.transform.scale(nome_img, (WIDTH, HEIGHT-60))
+
+car_img = pygame.image.load("carro4.png").convert_alpha()
+car_img = pygame.transform.scale(car_img, (47, 43))
+
+car_img2 = pygame.image.load("carro5 .png").convert_alpha()
+car_img2 = pygame.transform.scale(car_img2, (47, 43))
+car_width, car_height = 47, 43
+
+segredo_img = pygame.image.load('segredo_img.png').convert()
+segredo_img = pygame.transform.scale(segredo_img, (WIDTH, HEIGHT - 60))
+
+#volta_invalida_img = pygame.image.load("volta_invalida.png").convert_alpha()
+#volta_invalida_img = pygame.transform.scale(volta_invalida_img, (400, 100))  # ajustar tamanho
+
+
+#sons
+acelera = pygame.mixer.Sound('acelera.ogg')
+freia = pygame.mixer.Sound('car brake.ogg')
+segredo_sound = pygame.mixer.Sound('segredo som.ogg')
+
+#som_volta_invalida = pygame.mixer.Sound('volta_invalida.ogg')
+
+
+pygame.mixer.music.load('musicaBIT.ogg')
+pygame.mixer.music.set_volume(0.5)
+pygame.mixer.music.play(-1)
+
+acelera.set_volume(0)
+acelera.play(loops=-1)
+
+#carros como dicionarios
+carro1 = {
+    "img": car_img,
+    "pos": [500, 830], 
+    "angle": 0,
+    "speed": 0,
+    "accel": 0.3,
+    "max_speed": 7,
+    "friction": 0.05,
+    "turn_speed": 2.7,
+    "last_pos1": [550, 830]
+}
+
+
+#estados do jogo
+TELA_INICIAL = 0
+TELA_JOGO = 1
+estado = TELA_INICIAL
+TELA_SEGREDO = 2
+TELA_LEADERBOARD = 3
+TELA_NOME = 4
+
+# cronometro
+tempo_inicial = 0
+cronometro_ativo = False
+tempo_pausado_total = 0
+
+lap_times = []
+lap_started = False
+last_cross_time = 0
+lap_start_time = 0
+ultimo_tempo_volta = None
+melhor_volta = None
+diferenca_voltas = None
+mostrar_volta_invalida = False
+tempo_erro_mostrado = 3000
+
+#funcoes
+
+def audio(teclas, frente, tras):
+    if teclas[frente]:
+        acelera.play()
+        freia.stop()
+    else:
+        acelera.stop()
+        freia.play()
+
+def desenhar_tela_inicial():
+    screen.blit(inicio_img, (0, 45))
+
+def draw_track():
+    screen.blit(pista_img, (0, 0))
+    
+    pygame.draw.rect(screen, (0, 255, 0), largada_rect, 2) 
+
+def blit_rotate_center(surf, image, pos, angle):
+    rotated_image = pygame.transform.rotate(image, -angle)
+    new_rect = rotated_image.get_rect(center=image.get_rect(center=pos).center)
+    surf.blit(rotated_image, new_rect.topleft)
+
+def aplicar_movimento(teclas, frente, tras, esquerda, direita, car):
+    if teclas[frente]:
+        car["speed"] += car["accel"]
+    if teclas[tras]:
+        car["speed"] -= car["accel"]
+    if teclas[direita]:
+        car["angle"] += car["turn_speed"]
+    if teclas[esquerda]:
+        car["angle"] -= car["turn_speed"]
+    
+    car["speed"] = max(-car["max_speed"], min(car["max_speed"], car["speed"]))
+    
+    #atrito
+    if abs(car["speed"]) < car["friction"]:
+        car["speed"] = 0
+    else:
+        car["speed"] -= math.copysign(car["friction"], car["speed"])
+
+    #movimento
+    radians = math.radians(car["angle"])
+    car["last_pos"] = car["pos"][:]
+    car["pos"][0] += math.cos(radians) * car["speed"]
+    car["pos"][1] += math.sin(radians) * car["speed"]
+
+def na_pista(pos, mapa_col, angle):
+    x, y = pos
+    radians = math.radians(angle)
+    
+    # pegar 5 pontos em volta do carrinho  
+    offsets = [
+        (0, 0),  # centro
+        (math.cos(radians) * 20, math.sin(radians) * 20),  # frente
+        (math.cos(radians) * -20, math.sin(radians) * -20),  # tras
+        (math.cos(radians + math.pi/2) * 15, math.sin(radians + math.pi/2) * 15),  # esquerda
+        (math.cos(radians - math.pi/2) * 15, math.sin(radians - math.pi/2) * 15),  # direita
+    ]
+
+    for dx, dy in offsets:
+        cx, cy = int(x + dx), int(y + dy)
+        if not (0 <= cx < mapa_col.get_width() and 0 <= cy < mapa_col.get_height()):
+            return False
+        cor = mapa_col.get_at((cx, cy))[:3] #usar so rgb
+        if any(c < 250 for c in cor):  #se nao for proximo de branco eh fora da pista
+            return False
+    return True
+
+def penalty(pos, mapa_col, angle):
+    x, y = pos    
+    cor = mapa_col.get_at((int(x), int(y)))[:3]
+    
+    if cor == (255, 0, 0):
+        return True
+    else:
+        return False
+
+def segredo():
+    acelera.stop()
+    freia.stop()
+    pygame.mixer_music.stop()
+    
+    screen.blit(segredo_img, (0, 45))
+    best_text = fonte_pixel.render('Sem Trapacear', True, RED)
+    best_rect = best_text.get_rect(topleft=(670, 90))
+    screen.blit(best_text, best_rect)
+    
+    pygame.display.flip()
+    segredo_sound.play()
+    tempo_start = pygame.time.get_ticks()
+    tempo_current = pygame.time.get_ticks()
+    while (tempo_current - tempo_start) < 4000:
+        tempo_current = pygame.time.get_ticks()
+    pygame.quit()
+
+def leaderboard():
+    screen.blit(ranking_img, (0, 45))
+    acelera.stop()
+    freia.stop()
+    pygame.mixer_music.stop()
+
+def pedir_nome_jogador():
+    input_box = pygame.Rect(600, 450, 300, 50)
+    cor = pygame.Color('lightskyblue3')
+    
+
+    ativa = False
+    texto = ''
+    fonte = pygame.font.Font("PressStart2P-Regular.ttf", 20)
+
+    done = False
+    while not done:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    return texto
+                elif event.key == pygame.K_BACKSPACE:
+                    texto = texto[:-1]
+                else:
+                    texto += event.unicode
+
+        screen.fill((30, 30, 30))
+        txt_surface = fonte.render(texto, True, (255, 255, 255))
+        width = max(300, txt_surface.get_width() + 10)
+        input_box.w = width
+        screen.blit(txt_surface, (input_box.x + 5, input_box.y + 10))
+        pygame.draw.rect(screen, cor, input_box, 2)
+
+        instrucao = fonte.render("Digite seu nome e pressione ENTER:", True, (255, 255, 255))
+        screen.blit(instrucao, (300, 380))
+
+        pygame.display.flip()
+        clock.tick(30)
+
+
+
+
+#linha de largada/chegada  
+largada_rect = pygame.Rect(575, 750, 30, 100)  
+
+
+# Loop principal
+running = True
+while running:
+    clock.tick(FPS)
+    screen.fill(WHITE)
+    if estado == TELA_SEGREDO:
+        segredo()
+
+    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+            running = False
+        elif event.type == pygame.KEYDOWN and estado == TELA_INICIAL and event.key == pygame.K_RETURN:
+            estado = TELA_NOME
+        
+        elif event.type == pygame.KEYDOWN and estado == TELA_NOME and event.key == pygame.K_RETURN:
+            estado = TELA_JOGO
+            
+            
+
+
+    if estado == TELA_NOME:
+        nome_player = pedir_nome_jogador()
+        estado = TELA_JOGO
+        tempo_inicial = pygame.time.get_ticks()
+        cronometro_ativo = True
+
+
+    if estado == TELA_INICIAL:
+        desenhar_tela_inicial()
+
+    elif estado == TELA_JOGO:
+        pygame.mixer.music.set_volume(0.3)
+        draw_track()
+        
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_BACKSPACE]:
+            estado = TELA_LEADERBOARD
+
+
+        aplicar_movimento(keys, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, carro1)
+        
+        # #ajusta o volume com a velocidade
+        # velocidade_normalizada = abs(carro1["speed"]) / carro1["max_speed"]
+        # acelera.set_volume(min(1.0, velocidade_normalizada))
+
+        
+        # if keys[pygame.K_s] and carro1["speed"] > 2:
+        #     if not freia.get_num_channels():  #se nao esta tocando
+        #         freia.play()
+        # else:
+        #     freia.stop()
+
+        blit_rotate_center(screen, carro1["img"], carro1["pos"], carro1["angle"])
+        
+
+        #pygame.draw.circle(screen, (255, 0, 0), (int(carro1["pos"][0]), int(carro1["pos"][1])), 3)      ponto de debug no meio do carro
+        
+        now = pygame.time.get_ticks()
+
+        if (largada_rect.collidepoint(carro1["pos"])):
+            
+            if now - last_cross_time > 2000:  # debounce a cada 2 segundos
+                last_cross_time = now
+
+                if lap_started == True:  #tudo sobre a contagem de voltas
+                    lap_time = now - lap_start_time
+                    
+                    #segredo
+                    if lap_time <= 9000:
+                        estado = TELA_SEGREDO
+                        
+                    if estado != TELA_SEGREDO:
+                        lap_times.append(lap_time)
+                        
+                        #formatar twmpo da ultima volta
+                        minuto = lap_time // 60000
+                        seg = (lap_time % 60000) // 1000
+                        mil = lap_time % 1000
+                        ultimo_tempo_volta = f"{minuto:02}:{seg:02}.{mil:03}"
+
+                        #setar a melhot volta
+                        if melhor_volta == None or lap_time < melhor_volta:
+                            melhor_volta = lap_time
+
+                        #calcular diferenca
+                        if len(lap_times) >= 2:
+                            diferenca = lap_times[-1] - lap_times[-2]
+                            
+                            if diferenca > 0:
+                                sinal = '+'
+                                diff_cor = RED
+                            else:
+                                sinal = '-'
+                                diff_cor = GREEN
+                            
+                            diferenca = abs(diferenca)
+                            diff_min = diferenca // 60000
+                            diff_seg = (diferenca % 60000) // 1000
+                            diff_mil = diferenca % 1000
+                            diferenca_voltas = f"{sinal}{diff_seg:02}.{diff_mil:03}" #vc ganha um premio se fizer diferenca de 1 min ou mais
+                    
+                    
+                else:
+                    lap_started = True  #primeira vez cruzando a linha
+
+                lap_start_time = now
+
+
+        # Cronômetro
+        tempo_atual = pygame.time.get_ticks() if cronometro_ativo else tempo_inicial
+        tempo_decorrido_ms = tempo_atual - tempo_inicial - tempo_pausado_total
+
+        minutos = tempo_decorrido_ms // 60000
+        segundos = (tempo_decorrido_ms % 60000) // 1000
+        milesimos = tempo_decorrido_ms % 1000
+        tempo_formatado = f"{minutos:02}:{segundos:02}.{milesimos:03}"
+
+        texto = fonte_pixel.render(tempo_formatado, True, WHITE)
+        texto_rect = texto.get_rect(center=(WIDTH // 2+500, 100))
+        screen.blit(texto, texto_rect)
+        
+
+        if ultimo_tempo_volta:
+            lap_text = fonte_pixel.render(f"Última: {ultimo_tempo_volta}", True, WHITE)
+            lap_rect = lap_text.get_rect(topleft=(50, 50))
+            screen.blit(lap_text, lap_rect)
+
+        # Melhor volta
+        if melhor_volta is not None:
+            min_b = melhor_volta // 60000
+            seg_b = (melhor_volta % 60000) // 1000
+            mil_b = melhor_volta % 1000
+            melhor_formatado = f"{min_b:02}:{seg_b:02}.{mil_b:03}"
+            best_text = fonte_pixel.render(f"Melhor: {melhor_formatado}", True, WHITE)
+            best_rect = best_text.get_rect(topleft=(50, 90))
+            screen.blit(best_text, best_rect)
+
+        # Diferença de tempo
+        if diferenca_voltas:
+            diff_text = fonte_pixel.render(f"Δ: {diferenca_voltas}", True, diff_cor)
+            diff_rect = diff_text.get_rect(topleft=(50, 130))
+            screen.blit(diff_text, diff_rect)
+        
+            
+
+        if not na_pista(carro1['pos'], col_map, carro1['angle']):
+            carro1['speed'] = carro1['speed'] * 0.8
+
+        if penalty(carro1["pos"], col_map, carro1["angle"]) == True:
+            carro1['pos'] = [700, 830]
+            carro1['angle'] = 0
+
+    elif estado == TELA_LEADERBOARD:
+        volta_board = {nome_player: melhor_volta}
+        dicionario_tempos["voltas"].append(volta_board)
+        novo_json = json.dumps(dicionario_tempos)
+
+        with open('ranking.json', 'w') as arquivo_json:
+            arquivo_json.write(novo_json)
+        
+        
+        
+        leaderboard()
+        
+
+    pygame.display.flip()
+
+pygame.quit()
+
