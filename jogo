@@ -29,6 +29,15 @@ col_map = pygame.transform.scale(col_map, (WIDTH, HEIGHT - 60))
 inicio_img = pygame.image.load("telainicial.png").convert()
 inicio_img = pygame.transform.scale(inicio_img, (WIDTH, HEIGHT-60))
 
+nome_img = pygame.image.load("telanome.png").convert()
+nome_img = pygame.transform.scale(nome_img, (WIDTH, HEIGHT-60))
+
+instrucao_img = pygame.image.load("telainicial.png").convert()
+instrucao_img = pygame.transform.scale(instrucao_img, (WIDTH, HEIGHT-60))
+
+ranking_img = pygame.image.load("telaranking.png").convert()
+ranking_img = pygame.transform.scale(ranking_img, (WIDTH, HEIGHT-60))
+
 car_img = pygame.image.load("carro4.png").convert_alpha()
 car_img = pygame.transform.scale(car_img, (47, 43))
 
@@ -83,6 +92,9 @@ TELA_INICIAL = 0
 TELA_JOGO = 1
 estado = TELA_INICIAL
 TELA_SEGREDO = 2
+TELA_INSTRUCOES = 3
+TELA_NOME = 4
+TELA_RANKING = 5
 
 
 # cronometro
@@ -105,6 +117,15 @@ tempo_erro_mostrado = 3000
 
 def desenhar_tela_inicial():
     screen.blit(inicio_img, (0, 45))
+
+def tela_nome():
+    screen.blit(nome_img, (0, 45))
+
+def tela_instrucao():
+    screen.blit(instrucao_img, (0, 45))
+
+def tela_ranking():
+    screen.blit(ranking_img, (0, 45))
 
 def draw_track():
     screen.blit(pista_img, (0, 0))
@@ -206,9 +227,15 @@ while running:
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             running = False
         elif event.type == pygame.KEYDOWN and estado == TELA_INICIAL and event.key == pygame.K_RETURN:
+            estado = TELA_NOME
+        elif event.type == pygame.KEYDOWN and estado == TELA_NOME and event.key == pygame.K_RETURN:
+            estado = TELA_INSTRUCOES
+        elif event.type == pygame.KEYDOWN and estado == TELA_INSTRUCOES and event.key == pygame.K_RETURN:
             estado = TELA_JOGO
             tempo_inicial = pygame.time.get_ticks()
             cronometro_ativo = True
+        elif event.type == pygame.KEYDOWN and estado == TELA_JOGO and event.key == pygame.K_BACKSPACE:
+            estado = TELA_RANKING
 
 
     if estado == TELA_INICIAL:
@@ -323,7 +350,14 @@ while running:
             carro1['pos'] = [610, 830]
             carro1['angle'] = 0
     
-        
+    elif estado == TELA_NOME:
+        tela_nome()
+
+    elif estado == TELA_RANKING:
+        tela_ranking()
+
+    elif estado == TELA_INSTRUCOES:
+        tela_instrucao()
 
 
 
