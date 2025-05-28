@@ -56,7 +56,6 @@ texto_digitado = ""
 ativo = False  # Se o campo está ativo (clicado)
 limite_caracteres = 8
 input_rect = pygame.Rect(200, 200, 240, 50)
-nome_jogador = ""
 
 #sons
 acelera = pygame.mixer.Sound('acelera.ogg')
@@ -237,7 +236,7 @@ while running:
         elif event.type == pygame.KEYDOWN and estado == TELA_NOME:
             if event.key == pygame.K_RETURN:
                 estado = TELA_INSTRUCOES
-                print("Nome digitado:", nome_jogador)
+                print("Nome digitado:", texto_digitado)
             elif event.key == pygame.K_BACKSPACE:
                 texto_digitado = texto_digitado[:-1]
             else:
