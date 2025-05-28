@@ -28,6 +28,7 @@ RED = (255, 0, 0)
 
 #fonte
 fonte_pixel = pygame.font.Font("PressStart2P-Regular.ttf", 20)
+fonte_pixel2 = pygame.font.Font("PressStart2P-Regular.ttf", 40)
 
 #imagens
 pista_img = pygame.image.load("pista4.0.png").convert()
@@ -39,12 +40,24 @@ col_map = pygame.transform.scale(col_map, (WIDTH, HEIGHT - 60))
 inicio_img = pygame.image.load("telainicial.png").convert()
 inicio_img = pygame.transform.scale(inicio_img, (WIDTH, HEIGHT-60))
 
+<<<<<<< HEAD:jogo.py
 ranking_img = pygame.image.load("telaranking.png").convert()
 ranking_img = pygame.transform.scale(ranking_img, (WIDTH, HEIGHT-60))
 
 nome_img = pygame.image.load("telanome.png").convert()
 nome_img_img = pygame.transform.scale(nome_img, (WIDTH, HEIGHT-60))
 
+=======
+nome_img = pygame.image.load("telanome.png").convert()
+nome_img = pygame.transform.scale(nome_img, (WIDTH, HEIGHT-60))
+
+instrucao_img = pygame.image.load("telainicial.png").convert()
+instrucao_img = pygame.transform.scale(instrucao_img, (WIDTH, HEIGHT-60))
+
+ranking_img = pygame.image.load("telaranking.png").convert()
+ranking_img = pygame.transform.scale(ranking_img, (WIDTH, HEIGHT-60))
+
+>>>>>>> 27d2cb987274cf1a879e3dc10316d24a4c01b8ae:jogo
 car_img = pygame.image.load("carro4.png").convert_alpha()
 car_img = pygame.transform.scale(car_img, (47, 43))
 
@@ -58,6 +71,10 @@ segredo_img = pygame.transform.scale(segredo_img, (WIDTH, HEIGHT - 60))
 #volta_invalida_img = pygame.image.load("volta_invalida.png").convert_alpha()
 #volta_invalida_img = pygame.transform.scale(volta_invalida_img, (400, 100))  # ajustar tamanho
 
+texto_digitado = ""
+ativo = False  # Se o campo está ativo (clicado)
+limite_caracteres = 8
+input_rect = pygame.Rect(200, 200, 240, 50)
 
 #sons
 acelera = pygame.mixer.Sound('acelera.ogg')
@@ -93,8 +110,15 @@ TELA_INICIAL = 0
 TELA_JOGO = 1
 estado = TELA_INICIAL
 TELA_SEGREDO = 2
+<<<<<<< HEAD:jogo.py
 TELA_LEADERBOARD = 3
 TELA_NOME = 4
+=======
+TELA_INSTRUCOES = 3
+TELA_NOME = 4
+TELA_RANKING = 5
+
+>>>>>>> 27d2cb987274cf1a879e3dc10316d24a4c01b8ae:jogo
 
 # cronometro
 tempo_inicial = 0
@@ -123,6 +147,15 @@ def audio(teclas, frente, tras):
 
 def desenhar_tela_inicial():
     screen.blit(inicio_img, (0, 45))
+
+def tela_nome():
+    screen.blit(nome_img, (0, 45))
+
+def tela_instrucao():
+    screen.blit(instrucao_img, (0, 45))
+
+def tela_ranking():
+    screen.blit(ranking_img, (0, 45))
 
 def draw_track():
     screen.blit(pista_img, (0, 0))
@@ -271,6 +304,7 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN and estado == TELA_INICIAL and event.key == pygame.K_RETURN:
             estado = TELA_NOME
+<<<<<<< HEAD:jogo.py
         
         elif event.type == pygame.KEYDOWN and estado == TELA_NOME and event.key == pygame.K_RETURN:
             estado = TELA_JOGO
@@ -283,6 +317,23 @@ while running:
         estado = TELA_JOGO
         tempo_inicial = pygame.time.get_ticks()
         cronometro_ativo = True
+=======
+        elif event.type == pygame.KEYDOWN and estado == TELA_NOME:
+            if event.key == pygame.K_RETURN:
+                estado = TELA_INSTRUCOES
+                print("Nome digitado:", texto_digitado)
+            elif event.key == pygame.K_BACKSPACE:
+                texto_digitado = texto_digitado[:-1]
+            else:
+                if len(texto_digitado) < limite_caracteres and event.unicode.isalnum():
+                    texto_digitado += event.unicode
+        elif event.type == pygame.KEYDOWN and estado == TELA_INSTRUCOES and event.key == pygame.K_RETURN:
+            estado = TELA_JOGO
+            tempo_inicial = pygame.time.get_ticks()
+            cronometro_ativo = True
+        elif event.type == pygame.KEYDOWN and estado == TELA_JOGO and event.key == pygame.K_BACKSPACE:
+            estado = TELA_RANKING
+>>>>>>> 27d2cb987274cf1a879e3dc10316d24a4c01b8ae:jogo
 
 
     if estado == TELA_INICIAL:
@@ -410,6 +461,7 @@ while running:
         if penalty(carro1["pos"], col_map, carro1["angle"]) == True:
             carro1['pos'] = [700, 830]
             carro1['angle'] = 0
+<<<<<<< HEAD:jogo.py
 
     elif estado == TELA_LEADERBOARD:
         volta_board = {nome_player: melhor_volta}
@@ -423,6 +475,25 @@ while running:
         
         leaderboard()
         
+=======
+    
+    elif estado == TELA_NOME:
+        tela_nome()
+        texto_surface = fonte_pixel2.render(texto_digitado, True, WHITE)
+        texto_rect = texto_surface.get_rect(center=(480, 475))
+        screen.blit(texto_surface, texto_rect)
+        pygame.display.flip()
+    elif estado == TELA_RANKING:
+        tela_ranking()
+
+    elif estado == TELA_INSTRUCOES:
+        tela_instrucao()
+
+
+
+
+
+>>>>>>> 27d2cb987274cf1a879e3dc10316d24a4c01b8ae:jogo
 
     pygame.display.flip()
 
