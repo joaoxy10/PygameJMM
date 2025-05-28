@@ -2,14 +2,14 @@ import pygame
 import math
 import sys
 import json
-from jij import ordena
+
 
 nomex = 455
 numx = 988
 posy = 438
 increase = 110
 
-with open('ranking.json', 'r') as arquivo_json:
+with open('assets/ranking.json', 'r') as arquivo_json:
     lista_ranking = json.load(arquivo_json)
 print(lista_ranking)
 
@@ -29,40 +29,38 @@ RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 
 #fonte
-fonte_pixel = pygame.font.Font("PressStart2P-Regular.ttf", 20)
-fonte_pixel2 = pygame.font.Font("PressStart2P-Regular.ttf", 40)
+fonte_pixel = pygame.font.Font("assets/PressStart2P-Regular.ttf", 20)
+fonte_pixel2 = pygame.font.Font("assets/PressStart2P-Regular.ttf", 40)
 
 #imagens
-pista_img = pygame.image.load("pista4.0.png").convert()
+pista_img = pygame.image.load("assets/pista4.0.png").convert()
 pista_img = pygame.transform.scale(pista_img, (WIDTH, HEIGHT-60))
 
-col_map = pygame.image.load('pista4 colisao.png').convert()
+col_map = pygame.image.load('assets/pista4 colisao.png').convert()
 col_map = pygame.transform.scale(col_map, (WIDTH, HEIGHT - 60))
 
-inicio_img = pygame.image.load("telainicial.png").convert()
+inicio_img = pygame.image.load("assets/telainicial.png").convert()
 inicio_img = pygame.transform.scale(inicio_img, (WIDTH, HEIGHT-60))
 
-ranking_img = pygame.image.load("telaranking.png").convert()
+ranking_img = pygame.image.load("assets/telaranking.png").convert()
 ranking_img = pygame.transform.scale(ranking_img, (WIDTH, HEIGHT-60))
 
-nome_img = pygame.image.load("telanome.png").convert()
+nome_img = pygame.image.load("assets/telanome.png").convert()
 nome_img = pygame.transform.scale(nome_img, (WIDTH, HEIGHT-60))
 
-car_img = pygame.image.load("carro4.png").convert_alpha()
+car_img = pygame.image.load("assets/carro4.png").convert_alpha()
 car_img = pygame.transform.scale(car_img, (47, 43))
 
-car_img2 = pygame.image.load("carro5 .png").convert_alpha()
+car_img2 = pygame.image.load("assets/carro5 .png").convert_alpha()
 car_img2 = pygame.transform.scale(car_img2, (47, 43))
 car_width, car_height = 47, 43
 
-segredo_img = pygame.image.load('segredo_img.png').convert()
+segredo_img = pygame.image.load('assets/segredo_img.png').convert()
 segredo_img = pygame.transform.scale(segredo_img, (WIDTH, HEIGHT - 60))
 
-instrucao_img = pygame.image.load('instrucao_img.jpg').convert()
+instrucao_img = pygame.image.load('assets/instrucao_img.jpg').convert()
 instrucao_img = pygame.transform.scale(instrucao_img, (WIDTH, HEIGHT - 60))
 
-#volta_invalida_img = pygame.image.load("volta_invalida.png").convert_alpha()
-#volta_invalida_img = pygame.transform.scale(volta_invalida_img, (400, 100))  # ajustar tamanho
 
 nome_player = ""
 ativo = False  
@@ -70,19 +68,17 @@ limite_caracteres = 8
 input_rect = pygame.Rect(200, 200, 240, 50)
 
 #sons
-acelera = pygame.mixer.Sound('acelera.ogg')
-freia = pygame.mixer.Sound('car brake.ogg')
-segredo_sound = pygame.mixer.Sound('segredo som.ogg')
 
-#som_volta_invalida = pygame.mixer.Sound('volta_invalida.ogg')
+segredo_sound = pygame.mixer.Sound('assets/segredo som.ogg')
 
 
-pygame.mixer.music.load('musicaBIT.ogg')
+
+
+pygame.mixer.music.load('assets/musicaBIT.ogg')
 pygame.mixer.music.set_volume(0.5)
 pygame.mixer.music.play(-1)
 
-acelera.set_volume(0)
-acelera.play(loops=-1)
+
 
 #carros como dicionarios
 carro1 = {
@@ -135,14 +131,6 @@ def formatar_tempo(ms):
     mil = ms % 1000
     formatado = f"{minuto:02}:{seg:02}.{mil:03}"
     return formatado
-
-def audio(teclas, frente, tras):
-    if teclas[frente]:
-        acelera.play()
-        freia.stop()
-    else:
-        acelera.stop()
-        freia.play()
 
 def desenhar_tela_inicial():
     screen.blit(inicio_img, (0, 45))
@@ -219,8 +207,6 @@ def penalty(pos, mapa_col, angle):
         return False
 
 def segredo():
-    acelera.stop()
-    freia.stop()
     pygame.mixer_music.stop()
     
     screen.blit(segredo_img, (0, 45))
@@ -238,8 +224,6 @@ def segredo():
 
 def tela_ranking():
     screen.blit(ranking_img, (0, 45))
-    acelera.stop()
-    freia.stop()
     pygame.mixer_music.stop()
 
 def mostrar_voltas():
@@ -373,6 +357,7 @@ while running:
 
                         #setar a melhot volta
                         if melhor_volta == None or lap_time < melhor_volta:
+                            
                             melhor_volta = lap_time
 
                         #calcular diferenca
