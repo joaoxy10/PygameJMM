@@ -18,6 +18,7 @@ RED = (255, 0, 0)
 
 #fonte
 fonte_pixel = pygame.font.Font("PressStart2P-Regular.ttf", 20)
+fonte_pixel2 = pygame.font.Font("PressStart2P-Regular.ttf", 40)
 
 #imagens
 pista_img = pygame.image.load("pista4.0.png").convert()
@@ -51,6 +52,11 @@ segredo_img = pygame.transform.scale(segredo_img, (WIDTH, HEIGHT - 60))
 #volta_invalida_img = pygame.image.load("volta_invalida.png").convert_alpha()
 #volta_invalida_img = pygame.transform.scale(volta_invalida_img, (400, 100))  # ajustar tamanho
 
+texto_digitado = ""
+ativo = False  # Se o campo está ativo (clicado)
+limite_caracteres = 8
+input_rect = pygame.Rect(200, 200, 240, 50)
+nome_jogador = ""
 
 #sons
 acelera = pygame.mixer.Sound('acelera.ogg')
@@ -228,8 +234,15 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN and estado == TELA_INICIAL and event.key == pygame.K_RETURN:
             estado = TELA_NOME
-        elif event.type == pygame.KEYDOWN and estado == TELA_NOME and event.key == pygame.K_RETURN:
-            estado = TELA_INSTRUCOES
+        elif event.type == pygame.KEYDOWN and estado == TELA_NOME:
+            if event.key == pygame.K_RETURN:
+                estado = TELA_INSTRUCOES
+                print("Nome digitado:", nome_jogador)
+            elif event.key == pygame.K_BACKSPACE:
+                texto_digitado = texto_digitado[:-1]
+            else:
+                if len(texto_digitado) < limite_caracteres and event.unicode.isalnum():
+                    texto_digitado += event.unicode
         elif event.type == pygame.KEYDOWN and estado == TELA_INSTRUCOES and event.key == pygame.K_RETURN:
             estado = TELA_JOGO
             tempo_inicial = pygame.time.get_ticks()
@@ -352,7 +365,10 @@ while running:
     
     elif estado == TELA_NOME:
         tela_nome()
-
+        texto_surface = fonte_pixel2.render(texto_digitado, True, WHITE)
+        texto_rect = texto_surface.get_rect(center=(480, 475))
+        screen.blit(texto_surface, texto_rect)
+        pygame.display.flip()
     elif estado == TELA_RANKING:
         tela_ranking()
 
