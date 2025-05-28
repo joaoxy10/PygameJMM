@@ -4,6 +4,11 @@ import sys
 import json
 from jij import ordena
 
+nomex = 455
+numx = 988
+posy = 438
+increase = 110
+
 with open('ranking.json', 'r') as arquivo_json:
     lista_ranking = json.load(arquivo_json)
 print(lista_ranking)
@@ -21,6 +26,7 @@ FPS = 60
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
+BLACK = (0, 0, 0)
 
 #fonte
 fonte_pixel = pygame.font.Font("PressStart2P-Regular.ttf", 20)
@@ -118,7 +124,7 @@ mostrar_volta_invalida = False
 tempo_erro_mostrado = 3000
 imprimido = False
 salvo = False
-
+appendado = False
 
 
 #funcoes
@@ -235,6 +241,53 @@ def tela_ranking():
     acelera.stop()
     freia.stop()
     pygame.mixer_music.stop()
+
+def mostrar_voltas():
+    
+    if len(lista_ranking) >= 1:
+        lap1_text = fonte_pixel.render(formatar_tempo(lista_ranking[0]["volta"]), True, BLACK)
+        lap1_rect = lap1_text.get_rect(topleft=(numx, posy))
+        screen.blit(lap1_text, lap1_rect)
+
+        nome1_text = fonte_pixel.render(lista_ranking[0]["nome"], True, BLACK)
+        nome1_rect = nome1_text.get_rect(topleft=(nomex, posy))
+        screen.blit(nome1_text, nome1_rect)
+
+    if len(lista_ranking) >= 2:  
+        lap2_text = fonte_pixel.render(formatar_tempo(lista_ranking[1]["volta"]), True, BLACK)
+        lap2_rect = lap2_text.get_rect(topleft=(numx, posy+(increase*1)))
+        screen.blit(lap2_text, lap2_rect)
+
+        nome2_text = fonte_pixel.render(lista_ranking[1]["nome"], True, BLACK)
+        nome2_rect = nome2_text.get_rect(topleft=(nomex, posy+(increase*1)))
+        screen.blit(nome2_text, nome2_rect)
+
+    if len(lista_ranking) >= 3:    
+        lap3_text = fonte_pixel.render(formatar_tempo(lista_ranking[2]["volta"]), True, BLACK)
+        lap3_rect = lap3_text.get_rect(topleft=(numx, posy+(increase*2)))
+        screen.blit(lap3_text, lap3_rect)
+
+        nome3_text = fonte_pixel.render(lista_ranking[2]["nome"], True, BLACK)
+        nome3_rect = nome3_text.get_rect(topleft=(nomex, posy+(increase*2)))
+        screen.blit(nome3_text, nome3_rect)
+
+    if len(lista_ranking) >= 4:    
+        lap4_text = fonte_pixel.render(formatar_tempo(lista_ranking[3]["volta"]), True, BLACK)
+        lap4_rect = lap4_text.get_rect(topleft=(numx, posy+(increase*3)))
+        screen.blit(lap4_text, lap4_rect)
+
+        nome4_text = fonte_pixel.render(lista_ranking[3]["nome"], True, BLACK)
+        nome4_rect = nome4_text.get_rect(topleft=(nomex, posy+(increase*3)))
+        screen.blit(nome4_text, nome4_rect)
+
+    if len(lista_ranking) >= 5:   
+        lap5_text = fonte_pixel.render(formatar_tempo(lista_ranking[4]["volta"]), True, BLACK)
+        lap5_rect = lap5_text.get_rect(topleft=(numx, posy+(increase*4)))
+        screen.blit(lap5_text, lap5_rect)
+
+        nome5_text = fonte_pixel.render(lista_ranking[4]["nome"], True, BLACK)
+        nome5_rect = nome5_text.get_rect(topleft=(nomex, posy+(increase*4)))
+        screen.blit(nome1_text, nome5_rect)
 
 def organizar_por_tempo(lista):
     lista_org = sorted(lista_ranking, key=lambda x: x['volta']) #que funcao maravilhosa como eu nunca vi isso antes
@@ -388,12 +441,21 @@ while running:
         pygame.display.flip()
     
     elif estado == TELA_RANKING:
-        lista_ranking.append({"nome":nome_player, "volta":melhor_volta})
-        lista_ranking = organizar_por_tempo(lista_ranking)
-
-
+        
+        
+        if melhor_volta is not None and appendado == False:
+            
+            lista_ranking.append({"nome":nome_player, "volta":melhor_volta})
+            lista_ranking = organizar_por_tempo(lista_ranking)
+            
+            appendado = True
+        
+        
         tela_ranking()
         
+        mostrar_voltas()
+
+
         if imprimido == False:
             print(lista_ranking)
             imprimido = True
