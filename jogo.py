@@ -9,7 +9,7 @@ numx = 988
 posy = 438
 increase = 110
 
-with open('assets/ranking.json', 'r') as arquivo_json:
+with open('ranking.json', 'r') as arquivo_json:
     lista_ranking = json.load(arquivo_json)
 print(lista_ranking)
 
@@ -346,7 +346,7 @@ while running:
                     lap_time = now - lap_start_time
                     
                     #segredo hihi
-                    if lap_time <= 9000:
+                    if lap_time <= 10000:
                         estado = TELA_SEGREDO
                         
                     if estado != TELA_SEGREDO:
@@ -431,10 +431,10 @@ while running:
         if melhor_volta is not None and appendado == False:
             
             lista_ranking.append({"nome":nome_player, "volta":melhor_volta})
-            lista_ranking = organizar_por_tempo(lista_ranking)
+            
             
             appendado = True
-        
+        lista_ranking = organizar_por_tempo(lista_ranking)
         
         tela_ranking()
         
