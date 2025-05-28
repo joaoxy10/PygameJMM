@@ -5,11 +5,7 @@ import json
 from jij import ordena
 
 with open('ranking.json', 'r') as arquivo_json:
-    texto_ranking = arquivo_json.read()
-
-dicionario_tempos = json.load(texto_ranking)
-
-
+    texto_ranking = json.load(arquivo_json)
 print(texto_ranking)
 
 pygame.init()
@@ -40,24 +36,12 @@ col_map = pygame.transform.scale(col_map, (WIDTH, HEIGHT - 60))
 inicio_img = pygame.image.load("telainicial.png").convert()
 inicio_img = pygame.transform.scale(inicio_img, (WIDTH, HEIGHT-60))
 
-<<<<<<< HEAD:jogo.py
 ranking_img = pygame.image.load("telaranking.png").convert()
 ranking_img = pygame.transform.scale(ranking_img, (WIDTH, HEIGHT-60))
 
 nome_img = pygame.image.load("telanome.png").convert()
 nome_img_img = pygame.transform.scale(nome_img, (WIDTH, HEIGHT-60))
 
-=======
-nome_img = pygame.image.load("telanome.png").convert()
-nome_img = pygame.transform.scale(nome_img, (WIDTH, HEIGHT-60))
-
-instrucao_img = pygame.image.load("telainicial.png").convert()
-instrucao_img = pygame.transform.scale(instrucao_img, (WIDTH, HEIGHT-60))
-
-ranking_img = pygame.image.load("telaranking.png").convert()
-ranking_img = pygame.transform.scale(ranking_img, (WIDTH, HEIGHT-60))
-
->>>>>>> 27d2cb987274cf1a879e3dc10316d24a4c01b8ae:jogo
 car_img = pygame.image.load("carro4.png").convert_alpha()
 car_img = pygame.transform.scale(car_img, (47, 43))
 
@@ -72,7 +56,7 @@ segredo_img = pygame.transform.scale(segredo_img, (WIDTH, HEIGHT - 60))
 #volta_invalida_img = pygame.transform.scale(volta_invalida_img, (400, 100))  # ajustar tamanho
 
 texto_digitado = ""
-ativo = False  # Se o campo está ativo (clicado)
+ativo = False  
 limite_caracteres = 8
 input_rect = pygame.Rect(200, 200, 240, 50)
 
@@ -110,15 +94,10 @@ TELA_INICIAL = 0
 TELA_JOGO = 1
 estado = TELA_INICIAL
 TELA_SEGREDO = 2
-<<<<<<< HEAD:jogo.py
-TELA_LEADERBOARD = 3
-TELA_NOME = 4
-=======
 TELA_INSTRUCOES = 3
 TELA_NOME = 4
 TELA_RANKING = 5
 
->>>>>>> 27d2cb987274cf1a879e3dc10316d24a4c01b8ae:jogo
 
 # cronometro
 tempo_inicial = 0
@@ -150,12 +129,10 @@ def desenhar_tela_inicial():
 
 def tela_nome():
     screen.blit(nome_img, (0, 45))
+    nome_player = pedir_nome_jogador()
 
 def tela_instrucao():
     screen.blit(instrucao_img, (0, 45))
-
-def tela_ranking():
-    screen.blit(ranking_img, (0, 45))
 
 def draw_track():
     screen.blit(pista_img, (0, 0))
@@ -240,7 +217,7 @@ def segredo():
         tempo_current = pygame.time.get_ticks()
     pygame.quit()
 
-def leaderboard():
+def tela_ranking():
     screen.blit(ranking_img, (0, 45))
     acelera.stop()
     freia.stop()
@@ -304,20 +281,6 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN and estado == TELA_INICIAL and event.key == pygame.K_RETURN:
             estado = TELA_NOME
-<<<<<<< HEAD:jogo.py
-        
-        elif event.type == pygame.KEYDOWN and estado == TELA_NOME and event.key == pygame.K_RETURN:
-            estado = TELA_JOGO
-            
-            
-
-
-    if estado == TELA_NOME:
-        nome_player = pedir_nome_jogador()
-        estado = TELA_JOGO
-        tempo_inicial = pygame.time.get_ticks()
-        cronometro_ativo = True
-=======
         elif event.type == pygame.KEYDOWN and estado == TELA_NOME:
             if event.key == pygame.K_RETURN:
                 estado = TELA_INSTRUCOES
@@ -333,7 +296,6 @@ while running:
             cronometro_ativo = True
         elif event.type == pygame.KEYDOWN and estado == TELA_JOGO and event.key == pygame.K_BACKSPACE:
             estado = TELA_RANKING
->>>>>>> 27d2cb987274cf1a879e3dc10316d24a4c01b8ae:jogo
 
 
     if estado == TELA_INICIAL:
@@ -346,7 +308,7 @@ while running:
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_BACKSPACE]:
-            estado = TELA_LEADERBOARD
+            estado = TELA_RANKING
 
 
         aplicar_movimento(keys, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, carro1)
@@ -377,7 +339,7 @@ while running:
                 if lap_started == True:  #tudo sobre a contagem de voltas
                     lap_time = now - lap_start_time
                     
-                    #segredo
+                    #segredo hihi
                     if lap_time <= 9000:
                         estado = TELA_SEGREDO
                         
@@ -418,7 +380,7 @@ while running:
                 lap_start_time = now
 
 
-        # Cronômetro
+        #cronometro
         tempo_atual = pygame.time.get_ticks() if cronometro_ativo else tempo_inicial
         tempo_decorrido_ms = tempo_atual - tempo_inicial - tempo_pausado_total
 
@@ -437,7 +399,7 @@ while running:
             lap_rect = lap_text.get_rect(topleft=(50, 50))
             screen.blit(lap_text, lap_rect)
 
-        # Melhor volta
+        # melhor volta
         if melhor_volta is not None:
             min_b = melhor_volta // 60000
             seg_b = (melhor_volta % 60000) // 1000
@@ -447,7 +409,7 @@ while running:
             best_rect = best_text.get_rect(topleft=(50, 90))
             screen.blit(best_text, best_rect)
 
-        # Diferença de tempo
+        # diferenca de tempo
         if diferenca_voltas:
             diff_text = fonte_pixel.render(f"Δ: {diferenca_voltas}", True, diff_cor)
             diff_rect = diff_text.get_rect(topleft=(50, 130))
@@ -461,21 +423,6 @@ while running:
         if penalty(carro1["pos"], col_map, carro1["angle"]) == True:
             carro1['pos'] = [700, 830]
             carro1['angle'] = 0
-<<<<<<< HEAD:jogo.py
-
-    elif estado == TELA_LEADERBOARD:
-        volta_board = {nome_player: melhor_volta}
-        dicionario_tempos["voltas"].append(volta_board)
-        novo_json = json.dumps(dicionario_tempos)
-
-        with open('ranking.json', 'w') as arquivo_json:
-            arquivo_json.write(novo_json)
-        
-        
-        
-        leaderboard()
-        
-=======
     
     elif estado == TELA_NOME:
         tela_nome()
@@ -493,7 +440,6 @@ while running:
 
 
 
->>>>>>> 27d2cb987274cf1a879e3dc10316d24a4c01b8ae:jogo
 
     pygame.display.flip()
 
